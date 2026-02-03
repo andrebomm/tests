@@ -103,9 +103,9 @@ main {
   width: 100%;
   border: 1px solid #ddd;
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 10px 44px 10px 12px;
   font-size: 14px;
-  margin-top: 10px;
+  margin-top: 0px;
   padding-right: 44px;
 }
 
@@ -202,7 +202,9 @@ main {
 .searchWrap { position: relative; }
 /* Clean black X (no circle, no iOS weirdness) */
 .clearSearchBtn {
-  position: absolute;
+  position: relative;
+  margin-top: 10px; /* was on input */
+  
   right: 14px;
   top: 50%;
   transform: translateY(-50%); /* perfect vertical centering */
@@ -287,7 +289,7 @@ main {
   main { grid-template-columns: 1fr; height: calc(100vh - 78px); }
   .mapLegendBar { grid-template-columns: 1fr; }
   /* Leave some “white space” at the bottom so the sheet doesn't cover the map area visually */
-  :root { --sheet-gap: 36vh; } /* tweak this if you want more/less */
+  :root { --sheet-gap: 37vh; } /* tweak this if you want more/less */
 
   #map { height: calc(100vh - 78px - var(--sheet-gap)); }
   
