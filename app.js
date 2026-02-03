@@ -307,10 +307,8 @@ function hideSuggestions() {
 
 function syncClearSearchBtn() {
   if (!clearSearchBtn) return;
-
-  // Use the real DOM value, not searchTerm (they can desync)
-  const v = (searchInput?.value ?? "").trim();
-  clearSearchBtn.classList.toggle("hidden", v.length === 0);
+  const hasText = (searchInput.value || "").trim().length > 0;
+  clearSearchBtn.classList.toggle("hidden", !hasText);
 }
 
 function clearSearch() {
@@ -501,18 +499,12 @@ async function init() {
 
   searchInput.addEventListener("input", () => {
     searchTerm = (searchInput.value || "").trim().toLowerCase();
-    syncClearSearchBtn();
     geoLayer.setStyle(featureStyle);
     renderList();
     updateActiveStateLine();
     updateZoomButtonState();
     writeUrlState();
     renderSuggestions();
-  });
-  
-  // keep X always correct (iOS can change value in odd ways)
-  ["change", "keyup", "search"].forEach(evt => {
-    searchInput.addEventListener(evt, syncClearSearchBtn);
   });
   
   // --- Clear (X) button: show/hide + action ---
