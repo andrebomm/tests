@@ -268,7 +268,14 @@ main {
 @media (max-width: 980px) {
   main { grid-template-columns: 1fr; height: calc(100vh - 78px); }
   .mapLegendBar { grid-template-columns: 1fr; }
-  #map { height: calc(100vh - 78px); }
+  /* Leave some “white space” at the bottom so the sheet doesn't cover the map area visually */
+  :root { --sheet-gap: 28vh; } /* tweak this if you want more/less */
+
+  #map { height: calc(100vh - 78px - var(--sheet-gap)); }
+  
+  .mapCol {
+  padding-bottom: calc(var(--sheet-gap) + env(safe-area-inset-bottom));
+}
 
   /* Prevent iOS auto-zoom on input focus */
   .input { font-size: 16px; }
