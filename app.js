@@ -36,6 +36,7 @@ const zoomFilteredBtn = document.getElementById("zoomFilteredBtn");
 const resetBtn = document.getElementById("resetBtn");
 const searchInput = document.getElementById("searchInput");
 const searchSuggest = document.getElementById("searchSuggest");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
 
 const introCard = document.getElementById("introCard");
 const dismissIntroBtn = document.getElementById("dismissIntroBtn");
@@ -304,6 +305,27 @@ function hideSuggestions() {
   searchSuggest.innerHTML = "";
 }
 
+function syncClearSearchBtn() {
+  if (!clearSearchBtn) return;
+  const hasText = (searchInput.value || "").trim().length > 0;
+  clearSearchBtn.classList.toggle("hidden", !hasText);
+}
+
+function clearSearch() {
+  searchInput.value = "";
+  searchTerm = "";
+
+  hideSuggestions();
+  syncClearSearchBtn();
+
+  // update filtering + UI
+  geoLayer.setStyle(featureStyle);
+  renderList();
+  updateActiveStateLine();
+  updateZoomButtonState();
+  writeUrlState();
+}
+
 // filters ONLY by active LISA/HMM (not by searchTerm)
 function matchesNonSearchFilters(feature) {
   const p = feature.properties || {};
@@ -483,6 +505,19 @@ async function init() {
     updateZoomButtonState();
     writeUrlState();
     renderSuggestions();
+  });
+  
+  // --- Clear (X) button: show/hide + action ---
+  syncClearSearchBtn(); // initial
+
+  searchInput.addEventListener("input", () => {
+    syncClearSearchBtn();
+  });
+
+  clearSearchBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    clearSearch();
+    searchInput.focus(); // keeps keyboard open on mobile
   });
 
   zoomFilteredBtn.addEventListener("click", () => zoomToFiltered());
@@ -854,6 +889,7 @@ function resetAll() {
   activeHmm = null;
   searchTerm = "";
   searchInput.value = "";
+  syncClearSearchBtn();
 
   hideSuggestions();
 
