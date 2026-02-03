@@ -383,6 +383,7 @@ function renderSuggestions() {
 
   searchSuggest.innerHTML = "";
   searchSuggest.classList.remove("hidden");
+  updateSuggestMaxHeight();
 
   for (const item of candidates) {
     const p = item.f.properties || {};
@@ -424,6 +425,20 @@ function renderSuggestions() {
 
     searchSuggest.appendChild(row);
   }
+}
+
+function updateSuggestMaxHeight() {
+  if (!isMobile() || !searchSuggest || searchSuggest.classList.contains("hidden")) return;
+
+  const sidebarRect = sidebar.getBoundingClientRect();
+  const inputRect = searchInput.getBoundingClientRect();
+
+  // dove inizia il dropdown (top: calc(100% + 6px))
+  const dropdownTop = inputRect.bottom + 6;
+  const paddingBottom = 16;
+
+  const available = Math.max(120, Math.floor(sidebarRect.bottom - dropdownTop - paddingBottom));
+  searchSuggest.style.maxHeight = `${available}px`;
 }
 
 // ===== Init =====
@@ -538,6 +553,7 @@ async function init() {
     updateZoomButtonState();
     writeUrlState();
     renderSuggestions();
+    updateSuggestMaxHeight();
   });
   
   // --- Clear (X) button: show/hide + action ---
