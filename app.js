@@ -126,6 +126,22 @@ function isMobile() {
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 
+function viewportHeightPx() {
+  return window.visualViewport ? Math.round(window.visualViewport.height) : window.innerHeight;
+}
+
+function keyboardOffsetPx() {
+  if (!window.visualViewport) return 0;
+  const vv = window.visualViewport;
+  const kb = window.innerHeight - vv.height - (vv.offsetTop || 0);
+  return Math.max(0, Math.round(kb));
+}
+
+function applyKeyboardOffset() {
+  if (!isMobile()) return;
+  sidebar.style.bottom = `${keyboardOffsetPx()}px`;
+}
+
 // ===== Panel mode + height control =====
 function setPanelMode(mode) {
   if (!isMobile()) return;
@@ -164,7 +180,7 @@ function calcIntroHeightPx() {
 }
 
 function maxPanelHeightPx() {
-  return Math.round(window.innerHeight * 0.92);
+  return Math.round(viewportHeightPx() * 0.92);
 }
 
 function minPanelHeightPx() {
@@ -490,14 +506,27 @@ async function init() {
   // SEARCH
   searchInput.addEventListener("focus", () => {
     if (isMobile()) {
-      // keep it compact: search-only (good for keyboard)
-      setPanelToSearchOnly();
+      applyKeyboardOffset();
+      // durante la ricerca: apri il più possibile (anche per vedere suggerimenti)
+      setPanelMode("search");
+      setPanelHeight(maxPanelHeightPx());
+
+      // assicura che l’input sia davvero visibile sopra la tastiera
+      setTimeout(() => {
+        searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
     }
     renderSuggestions();
+    setTimeout(() => updateSuggestMaxHeight(), 0);
   });
 
   searchInput.addEventListener("blur", () => {
     setTimeout(() => hideSuggestions(), 120);
+    if (isMobile()) {
+      setTimeout(() => {
+        applyKeyboardOffset(); // torna giù quando la tastiera sparisce
+      }, 50);
+    }
     setTimeout(() => map.invalidateSize(), 80);
   });
 
@@ -566,9 +595,17 @@ async function init() {
 
   // viewport resize fix for keyboard
   if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", () => {
+    const onVV = () => {
+      applyKeyboardOffset();
+      // se il pannello è aperto, clampalo alla nuova viewport
+      const h = parseFloat(getComputedStyle(sidebar).height || "0");
+      if (isFinite(h) && h > 0) setPanelHeight(h);
       setTimeout(() => map.invalidateSize(), 50);
-    });
+      updateSuggestMaxHeight?.();
+    };
+
+    window.visualViewport.addEventListener("resize", onVV);
+    window.visualViewport.addEventListener("scroll", onVV);
   }
   window.addEventListener("orientationchange", () => setTimeout(() => map.invalidateSize(), 200));
 
