@@ -419,6 +419,10 @@ async function init() {
   // intro persistence
   const introDismissed = localStorage.getItem("nil_intro_dismissed") === "1";
 
+  if (introDismissed) {
+    introCard.classList.add("hidden"); // non farla riapparire mai
+  }
+
   // load data
   geojson = await fetchJSON("data/nil.geojson");
   allFeatures = geojson.features || [];
